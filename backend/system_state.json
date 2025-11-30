@@ -1,0 +1,1 @@
+{"service_name": "payment-gateway", "status": "HEALTHY", "error_code": 200, "active_connections": 42, "max_connections": 1000, "uptime": "1 second"}
