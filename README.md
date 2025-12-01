@@ -9,6 +9,8 @@
 
 OpsGuardian is a production-ready **Autonomous Site Reliability Engineer (SRE)** designed to diagnose issues, propose fixes, and execute runbooks—all while keeping a human in the loop for critical decisions. Built on **Google Gemini 2.5 Flash Lite**, it combines the speed of AI with the safety of enterprise-grade security protocols.
 
+📺 [**Watch the Video**](https://youtu.be/Pb5cLCRJ9Y8)
+
 ---
 
 ## Architecture
