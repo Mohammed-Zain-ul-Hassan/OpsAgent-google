@@ -208,13 +208,19 @@ async def auth_middleware(request: Request, call_next):
     response = await call_next(request)
     return response
 
+# Define allowed origins
+origins = [
+    "http://localhost:3000",
+]
+
+# Add FRONTEND_URL from env if it exists
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        os.getenv("FRONTEND_URL", "http://localhost:3000"), 
-        "http://localhost:3001",
-        "https://ops-agent-google.vercel.app"
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
