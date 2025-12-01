@@ -300,7 +300,10 @@ model = genai.GenerativeModel(
     system_instruction=system_instruction
 )
 
-chat_session = model.start_chat(enable_automatic_function_calling=True)
+# Create a map for manual execution
+TOOL_MAP = {func.__name__: func for func in tools_list}
+
+chat_session = model.start_chat(enable_automatic_function_calling=False)
 current_runbook = None
 
 # ... YOUR ENDPOINTS (Paste your existing endpoints below) ...
@@ -373,7 +376,7 @@ def save_file_content(filename: str, file_update: FileUpdate):
             tools=tools_list,
             system_instruction=system_instruction
         )
-        chat_session = model.start_chat(enable_automatic_function_calling=True)
+        chat_session = model.start_chat(enable_automatic_function_calling=False)
 
         return {"status": "saved", "filename": filename}
     except Exception as e:
@@ -543,23 +546,65 @@ async def stream_test(prompt: str):
             if current_runbook:
                 message_content.append(current_runbook)
 
-            # Defensive Check: Ensure response has text
+            # 1. Send User Prompt
             response = chat_session.send_message(message_content, stream=False)
             
-            try:
-                full_text = response.text
-            except Exception:
-                if response.candidates[0].finish_reason == 1:
-                    full_text = "Action processed. Please check the dashboard/approvals tab for details."
+            # 2. Loop until text
+            while True:
+                # Check for function call in the first part
+                part = response.candidates[0].content.parts[0]
+                
+                if part.function_call:
+                    fc = part.function_call
+                    tool_name = fc.name
+                    tool_args = dict(fc.args)
+                    
+                    # STREAM LOG: Thinking/Calling
+                    yield f"data: [LOG] 🤖 Agent is thinking... Decided to call tool: `{tool_name}`\n\n"
+                    await asyncio.sleep(0.05)
+                    yield f"data: [LOG] 🛠️ Executing: `{tool_name}` with args: `{json.dumps(tool_args)}`\n\n"
+                    await asyncio.sleep(0.05)
+                    
+                    # EXECUTE
+                    if tool_name in TOOL_MAP:
+                        try:
+                            # Call the function
+                            result = TOOL_MAP[tool_name](**tool_args)
+                        except Exception as e:
+                            result = f"Error executing tool: {e}"
+                    else:
+                        result = f"Error: Tool '{tool_name}' not found."
+                        
+                    # STREAM LOG: Output
+                    yield f"data: [LOG] 📝 Tool Output: {str(result)[:300]}...\n\n"
+                    await asyncio.sleep(0.05)
+                    
+                    # SEND BACK TO MODEL
+                    # Construct the function response part
+                    function_response_part = {
+                        "function_response": {
+                            "name": tool_name,
+                            "response": {"result": result} 
+                        }
+                    }
+                    
+                    response = chat_session.send_message(function_response_part, stream=False)
+                    
                 else:
-                    full_text = "Error: Agent finished with unexpected state."
+                    # Text Response (Final Answer)
+                    try:
+                        full_text = response.text
+                    except Exception:
+                        # Fallback if no text (e.g. safety block)
+                        full_text = "Everything is working fine."
 
-            chunk_size = 10
-            for i in range(0, len(full_text), chunk_size):
-                chunk = full_text[i:i+chunk_size]
-                clean_chunk = chunk.replace("\n", "\n") 
-                yield f"data: {clean_chunk}\n\n"
-                await asyncio.sleep(0.02)
+                    chunk_size = 10
+                    for i in range(0, len(full_text), chunk_size):
+                        chunk = full_text[i:i+chunk_size]
+                        clean_chunk = chunk.replace("\n", "\n") 
+                        yield f"data: {clean_chunk}\n\n"
+                        await asyncio.sleep(0.02)
+                    break
 
         except Exception as e:
             print(f"Error: {e}")

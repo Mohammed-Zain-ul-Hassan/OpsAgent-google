@@ -1,2 +1,29 @@
-when system feels slow, 
-RUN : echo "Hello! chill out, nothing will happen"
+# ENTERPRISE INCIDENT RESPONSE PROTOCOL
+# CLASSIFICATION: CONFIDENTIAL / INTERNAL USE ONLY
+# EFFECTIVE DATE: 2025-01-01
+
+## SECTION 4: PAYMENT GATEWAY INFRASTRUCTURE
+
+### 4.1. CRITICAL LATENCY EVENTS
+A "Critical Latency Event" is defined as global API latency exceeding 1500ms or connection counts exceeding 1,000 active sockets.
+
+**DIAGNOSTIC PROCEDURE:**
+1. Agent must query system metrics immediately upon alert.
+2. Agent must verify if the issue is CPU-bound or Connection-bound.
+
+**REMEDIATION PROTOCOL (STRICT):**
+If the active connection count exceeds the safe threshold (1,000):
+
+1. **STEP 1: MANDATORY NOTIFICATION**
+   Before taking any action, you must notify the **DevOps Red Team** immediately via the **Discord Alert System**. 
+   *Reason: Payment data integrity must be monitored during restarts.*
+
+2. **STEP 2: SERVICE RESTART**
+   The Agent is authorized to draft a Python script to restart the `payment-gateway` service.
+   
+   **WARNING:** This action causes temporary downtime.
+   **REQUIREMENT:** The restart script MUST be submitted for **HUMAN APPROVAL** via the "Edit-Before-Run" Sandbox. Do not execute without explicit authorization.
+
+### 4.2. SECURITY COMPLIANCE
+* Under no circumstances should the Agent execute shell commands (`rm`, `chmod`) directly.
+* All fixes must be performed via Python scripts using the approved tooling libraries.

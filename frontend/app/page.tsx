@@ -280,6 +280,12 @@ export default function Dashboard() {
       // The backend now creates an Approval Request directly.
       // We just need to listen for the [AWAITING_APPROVAL] signal which is already handled above.
 
+      // 3. CHECK FOR LOGS
+      if (cleanData.trim().startsWith("[LOG]")) {
+        setLogs((prev) => [...prev, cleanData]);
+        return;
+      }
+
       setLogs((prev) => {
         const lastLog = prev[prev.length - 1];
         if (lastLog && lastLog.startsWith("> AGENT:")) {
@@ -491,8 +497,11 @@ export default function Dashboard() {
           <>
             <div className="flex-1 p-4 pt-20 overflow-y-auto space-y-2 text-sm font-mono custom-scrollbar">
               {logs.map((log, i) => (
-                <div key={i} className={`break-words ${log.startsWith("> USER") ? "text-white/70" : "text-green-400"}`}>
-                  {log}
+                <div key={i} className={`break-words ${log.startsWith("> USER") ? "text-white/70" :
+                    log.startsWith("[LOG]") ? "text-gray-500 font-mono text-xs ml-4 border-l-2 border-gray-700 pl-2 my-1" :
+                      "text-green-400"
+                  }`}>
+                  {log.startsWith("[LOG]") ? log.replace("[LOG]", "").trim() : log}
                 </div>
               ))}
               <div ref={logsEndRef} />
