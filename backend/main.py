@@ -15,7 +15,6 @@ import hashlib
 import secrets
 
 # IMPORTS FROM YOUR MODULES
-# IMPORTS FROM YOUR MODULES
 from tools import tools_list, send_discord_alert
 from state import PENDING_ACTIONS as approval_queue
 from monitoring import check_monitors, run_command
@@ -403,14 +402,7 @@ def approve_request(request_id: str, body: ApprovalRequest = None):
     req = approval_queue[request_id]
     
     # EXECUTE THE LOGIC HERE
-    if req["tool"] == "restart_service":
-        # For now, we'll just run a dummy command or a real one if configured
-        # In a real app, this would be a specific command from the request
-        result = "Service restart command executed (simulated for safety)." 
-        req["status"] = "EXECUTED"
-        return {"status": "success", "result": result}
-        
-    elif req["tool"] == "run_terminal_command":
+    if req["tool"] == "run_terminal_command":
         command = req.get("command")
         if not command:
             return {"error": "No command found in request"}

@@ -74,44 +74,7 @@ def check_payment_gateway_metrics():
 
 from state import PENDING_ACTIONS # <--- Import from shared file
 
-def execute_service_restart():
-    """
-    REQUESTS to restart the Payment Gateway. 
-    Does NOT execute immediately. Triggers an Approval Workflow.
-    Takes no arguments.
-    """
-    print("--- 🛠️ TOOL CALLED: execute_service_restart ---") # <--- DEBUG PRINT
 
-    # 1. Generate ID
-    request_id = str(uuid.uuid4())[:8]
-    print(f"--- 🆔 GENERATING REQUEST: {request_id} ---") # <--- DEBUG PRINT
-    
-    # 2. Store Request (Simulating DB insert)
-    PENDING_ACTIONS[request_id] = {
-        "id": request_id,
-        "tool": "restart_service",
-        "status": "PENDING",
-        "timestamp": datetime.now().strftime("%H:%M:%S"),
-        "description": "Restart Payment Gateway (High Load Detected)"
-    }
-    
-    # 3. Custom Discord Message
-    dashboard_url = f"{os.getenv('FRONTEND_URL')}/?tab=approvals"
-    discord_payload = {
-        "content": f"🛡️ **PERMISSION REQUIRED**\nAI Agent wants to: **RESTART SERVICE**\nReason: High Latency.\n\n[OPEN APPROVALS DASHBOARD]({dashboard_url})"
-    }
-    try:
-        webhooks = get_discord_webhooks()
-        for webhook in webhooks:
-            try:
-                requests.post(webhook, json=discord_payload)
-            except Exception as e:
-                print(f"Failed to send to webhook {webhook}: {e}")
-    except:
-        pass
-
-    # 4. Return message to the AI
-    return f"ACTION PAUSED [AWAITING_APPROVAL]. Created Approval Request ID: {request_id}. Notify the user to check the Approvals Tab."
 
 # A specialized tool for OpsGuardian to verify things
 def check_system_status():
@@ -294,7 +257,7 @@ tools_list = [
     write_file, 
     delete_file,
     check_payment_gateway_metrics, 
-    execute_service_restart, 
+ 
     send_discord_alert,
     run_terminal_command,
     get_system_resources,
