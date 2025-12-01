@@ -8,14 +8,25 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    net-tools \
+    iputils-ping \
+    && rm -rf /var/lib/apt/lists/*.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the app
 COPY . .
 
-# Expose the port
-EXPOSE 8000
 
-# Command to run the application
-# host 0.0.0.0 is crucial for Docker networking
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Create a non-root user
+RUN useradd -m appuser
+
+# Change ownership of the app directory
+RUN chown -R appuser:appuser /app
+
+# Switch to the user
+USER appuser
+
+# Cloud Run injects PORT
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}

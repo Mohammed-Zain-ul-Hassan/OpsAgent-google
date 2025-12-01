@@ -4,6 +4,7 @@ export function useVoice() {
     const [isListening, setIsListening] = useState(false);
     const [transcript, setTranscript] = useState("");
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const recognitionRef = useRef<any>(null);
 
     // 1. LOAD VOICES (Chrome requires waiting for this event)
@@ -20,6 +21,7 @@ export function useVoice() {
 
     // 2. SPEECH RECOGNITION (Listening)
     const startListening = useCallback(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (!SpeechRecognition) {
             alert("Browser does not support Speech Recognition.");
@@ -38,6 +40,7 @@ export function useVoice() {
 
         recognition.onstart = () => setIsListening(true);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         recognition.onresult = (event: any) => {
             // Get the latest result from the array
             const lastResultIndex = event.results.length - 1;

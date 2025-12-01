@@ -1,0 +1,15 @@
+{
+    "monitors": [
+        {
+            "name": "Disk Usage",
+            "command": "df -h / | tail -1"
+        },
+        {
+            "name": "Active Connections",
+            "command": "netstat -an | grep ESTABLISHED | wc -l"
+        }
+    ],
+    "discord_webhooks": [
+        "https://discord.com/api/webhooks/1443176335835926539/iJXc4lBLVjd5o9mWOWIi6aN7cXNWBdh6e3T_KCdZIwEsZZ16gMb_zhBZpowier55AkD4"
+    ]
+}

@@ -5,3 +5,4 @@ venv/
 .DS_Store
 .next/
 dist/
+backend/auth.json

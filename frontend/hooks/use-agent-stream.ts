@@ -10,7 +10,8 @@ export function useAgentStream() {
     setIsStreaming(true);
 
     // Connect to backend
-    const url = `http://localhost:8000/stream-test?prompt=${encodeURIComponent(prompt)}`;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const url = `${API_URL}/stream-test?prompt=${encodeURIComponent(prompt)}`;
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
 
