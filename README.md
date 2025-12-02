@@ -29,6 +29,7 @@ Traditional DevOps is manual and reactive. OpsGuardian is autonomous and proacti
 | **Knowledge** | Scattered wikis & outdated docs | **RAG Integration** reads PDF Runbooks instantly |
 | **Safety** | "Cowboy coding" in production | **Secure Sandbox** with "Edit-Before-Run" workflow |
 | **Alerts** | Email floods | **Smart Discord Notifications** |
+| **Interface** | CLI / Terminal | **Voice Command** & **Real-time Web UI** |
 
 ---
 
@@ -48,6 +49,19 @@ The file system is strictly jailed to the `agent_workspace`.
 
 ### 3. Command Injection Remediation
 All internal system monitors use secure argument parsing (`shlex`) to prevent shell injection attacks.
+
+---
+
+## Key Features
+
+### 🎙️ Voice Command Interface
+Speak directly to your infrastructure. OpsGuardian uses advanced speech-to-text to understand complex commands like *"Check the payment gateway latency and restart if it's over 500ms"*.
+
+### 📝 Live File Editor
+View and edit files in the agent's workspace directly from the dashboard. Useful for reviewing logs, tweaking scripts, or updating configuration on the fly.
+
+### 👁️ Real-time Process Visibility
+Watch the agent "think". The dashboard streams the agent's internal thought process, tool selections, and raw outputs in real-time, giving you complete transparency into its actions.
 
 ---
 
