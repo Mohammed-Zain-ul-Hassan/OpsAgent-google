@@ -89,8 +89,9 @@ async def autonomous_watchdog():
             config = load_config()
             monitors = config.get("monitors", [])
             
-            # Run all monitors
-            results = check_monitors(monitors)
+            # Run all monitors in a thread pool to avoid blocking the event loop
+            loop = asyncio.get_running_loop()
+            results = await loop.run_in_executor(None, check_monitors, monitors)
             
             # Simple logic: If any command returns an error (non-zero exit code usually implies error text in our wrapper)
             # For now, we'll just log it. 
@@ -111,7 +112,7 @@ async def autonomous_watchdog():
                     
                     try:
                         # We send a message to the chat session invisibly
-                        response = chat_session.send_message(prompt)
+                        response = await loop.run_in_executor(None, chat_session.send_message, prompt)
                         try:
                             logger.info(f"AI RESPONSE: {response.text}")
                         except:
@@ -139,6 +140,22 @@ async def lifespan(app: FastAPI):
     yield
     # Kill the loop when server stops
     task.cancel()
+
+# HELPER: Path Validation
+def validate_path(filename: str) -> str:
+    """
+    Securely resolves the file path and ensures it is within the workspace.
+    Prevents Path Traversal attacks (e.g. ../../etc/passwd).
+    """
+    base_dir = os.path.abspath(WORKSPACE_DIR)
+    # Join and resolve the absolute path
+    file_path = os.path.abspath(os.path.join(base_dir, filename))
+    
+    # Check if the resolved path starts with the base directory
+    if not file_path.startswith(base_dir):
+        raise HTTPException(status_code=403, detail="Access denied: Path traversal detected.")
+    
+    return file_path
 
 # AUTH CONFIG
 AUTH_FILE = "auth.json"
@@ -334,14 +351,14 @@ def get_approvals():
 # Endpoint 2: Read a specific file (to show content in UI later)
 @app.get("/files/{filename}")
 def read_file_content(filename: str):
-    file_path = os.path.join("./agent_workspace", filename)
+    file_path = validate_path(filename)
     if os.path.exists(file_path):
         return FileResponse(file_path)
     return {"error": "File not found"}
 
 @app.post("/files/{filename}")
 def save_file_content(filename: str, file_update: FileUpdate):
-    file_path = os.path.join("./agent_workspace", filename)
+    file_path = validate_path(filename)
     
     # CHECK LIMITS if creating a new file
     if not os.path.exists(file_path):
@@ -384,7 +401,7 @@ def save_file_content(filename: str, file_update: FileUpdate):
 
 @app.delete("/files/{filename}")
 def delete_file(filename: str):
-    file_path = os.path.join("./agent_workspace", filename)
+    file_path = validate_path(filename)
     try:
         if os.path.exists(file_path):
             os.remove(file_path)
